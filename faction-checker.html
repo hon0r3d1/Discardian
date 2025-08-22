@@ -1,0 +1,118 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <title>Faction Checker</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <style>
+    body { 
+      font-family: system-ui, sans-serif; 
+      background: #f8fafc; 
+      display: flex; 
+      justify-content: center; 
+      align-items: center; 
+      min-height: 100vh; 
+    }
+    .card {
+      background: white; 
+      padding: 2rem; 
+      border-radius: 1rem; 
+      box-shadow: 0 8px 24px rgba(0,0,0,0.1); 
+      max-width: 420px; 
+      width: 100%;
+    }
+    h1 { margin-top: 0; font-size: 1.5rem; text-align: center; }
+    label { display: block; margin-top: 1rem; font-weight: 600; }
+    input { 
+      width: 100%; 
+      padding: .6rem .8rem; 
+      font-size: 1rem; 
+      margin-top: .25rem; 
+      border: 1px solid #ccc; 
+      border-radius: .5rem; 
+    }
+    button { 
+      margin-top: 1.5rem; 
+      width: 100%; 
+      padding: .75rem; 
+      font-size: 1rem; 
+      font-weight: 600; 
+      color: white; 
+      background: #2563eb; 
+      border: none; 
+      border-radius: .5rem; 
+      cursor: pointer;
+    }
+    button:hover { background: #1d4ed8; }
+    #out {
+      margin-top: 1.5rem; 
+      padding: .75rem 1rem; 
+      border-radius: .5rem; 
+      font-size: 1rem;
+    }
+    .friendly { background: #e6ffed; border: 1px solid #b7f5c3; }
+    .enemy { background: #ffecec; border: 1px solid #ffc2c2; }
+    .unknown { background: #f3f3f3; border: 1px solid #ddd; }
+    .err { background: #fff6f6; border: 1px solid #ffd1d1; }
+  </style>
+</head>
+<body>
+  <div class="card">
+    <h1>Faction Checker</h1>
+    <label for="name">Minecraft Username</label>
+    <input id="name" placeholder="Enter username" required />
+
+    <label for="key">API Key</label>
+    <input id="key" type="password" placeholder="Enter API key" required />
+
+    <button id="checkBtn">Check Faction</button>
+
+    <div id="out"></div>
+  </div>
+
+  <script>
+    const API_URL = 'https://script.google.com/macros/s/AKfycbyu5t0xjr2-2xKAuiPFwJfqt0HSocycxdEzESkYnE5MQK1s-T4EHM-jrtO2Ql-vScEs/exec';
+
+    document.getElementById('checkBtn').addEventListener('click', async () => {
+      const name = document.getElementById('name').value.trim();
+      const key = document.getElementById('key').value.trim();
+      const out = document.getElementById('out');
+
+      if (!name || !key) {
+        out.className = 'err';
+        out.textContent = 'Please enter both a username and API key.';
+        return;
+      }
+
+      out.className = '';
+      out.textContent = 'Checking…';
+
+      try {
+        const res = await fetch(`${API_URL}?name=${encodeURIComponent(name)}&key=${encodeURIComponent(key)}`);
+        const data = await res.json();
+
+        if (!data.ok) {
+          out.className = 'err';
+          out.textContent = `Error: ${data.error || 'Unknown error'}`;
+          return;
+        }
+
+        let relationClass = 'unknown';
+        if (data.relation === 'FRIENDLY') relationClass = 'friendly';
+        if (data.relation === 'ENEMY') relationClass = 'enemy';
+
+        out.className = relationClass;
+        out.innerHTML = `
+          <strong>Player:</strong> ${data.player ?? '(not found)'}<br>
+          <strong>Designation #:</strong> ${data.designation_number ?? '(unknown)'}<br>
+          <strong>Faction:</strong> ${data.faction ?? '(unknown)'}<br>
+          <strong>Status:</strong> ${data.relation}
+        `;
+      } catch (err) {
+        out.className = 'err';
+        out.textContent = 'Network error';
+      }
+    });
+  </script>
+</body>
+</html>
