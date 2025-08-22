@@ -62,19 +62,18 @@
     <label for="name">Minecraft Username</label>
     <input id="name" placeholder="Enter username" required />
 
-    <label for="key">API Key</label>
-    <input id="key" type="password" placeholder="Enter API key" required />
-
     <button id="checkBtn">Check Faction</button>
 
     <div id="out"></div>
   </div>
 
   <script>
-    // 👇 Replace with your Apps Script Web App URL
+    // 👇 Your Apps Script Web App URL
     const API_URL = 'https://script.google.com/macros/s/AKfycbyu5t0xjr2-2xKAuiPFwJfqt0HSocycxdEzESkYnE5MQK1s-T4EHM-jrtO2Ql-vScEs/exec';
+    // 👇 Baked-in API Key
+    const API_KEY = 'gojoslimitless';
 
-    // JSONP callback function (Apps Script calls this)
+    // JSONP callback
     function handleResponse(data) {
       const out = document.getElementById('out');
       if (!data.ok) {
@@ -97,21 +96,20 @@
 
     document.getElementById('checkBtn').addEventListener('click', () => {
       const name = document.getElementById('name').value.trim();
-      const key = document.getElementById('key').value.trim();
       const out = document.getElementById('out');
 
-      if (!name || !key) {
+      if (!name) {
         out.className = 'err';
-        out.textContent = 'Please enter both a username and API key.';
+        out.textContent = 'Please enter a username.';
         return;
       }
 
       out.className = '';
       out.textContent = 'Checking…';
 
-      // Create JSONP request by injecting <script>
+      // Inject <script> for JSONP
       const script = document.createElement('script');
-      script.src = `${API_URL}?name=${encodeURIComponent(name)}&key=${encodeURIComponent(key)}&callback=handleResponse`;
+      script.src = `${API_URL}?name=${encodeURIComponent(name)}&key=${encodeURIComponent(API_KEY)}&callback=handleResponse`;
       document.body.appendChild(script);
     });
   </script>
