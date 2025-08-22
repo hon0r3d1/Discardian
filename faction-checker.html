@@ -71,9 +71,31 @@
   </div>
 
   <script>
+    // 👇 Replace with your Apps Script Web App URL
     const API_URL = 'https://script.google.com/macros/s/AKfycbyu5t0xjr2-2xKAuiPFwJfqt0HSocycxdEzESkYnE5MQK1s-T4EHM-jrtO2Ql-vScEs/exec';
 
-    document.getElementById('checkBtn').addEventListener('click', async () => {
+    // JSONP callback function (Apps Script calls this)
+    function handleResponse(data) {
+      const out = document.getElementById('out');
+      if (!data.ok) {
+        out.className = 'err';
+        out.textContent = `Error: ${data.error || 'Unknown error'}`;
+        return;
+      }
+      let relationClass = 'unknown';
+      if (data.relation === 'FRIENDLY') relationClass = 'friendly';
+      if (data.relation === 'ENEMY') relationClass = 'enemy';
+
+      out.className = relationClass;
+      out.innerHTML = `
+        <strong>Player:</strong> ${data.player ?? '(not found)'}<br>
+        <strong>Designation #:</strong> ${data.designation_number ?? '(unknown)'}<br>
+        <strong>Faction:</strong> ${data.faction ?? '(unknown)'}<br>
+        <strong>Status:</strong> ${data.relation}
+      `;
+    }
+
+    document.getElementById('checkBtn').addEventListener('click', () => {
       const name = document.getElementById('name').value.trim();
       const key = document.getElementById('key').value.trim();
       const out = document.getElementById('out');
@@ -87,31 +109,10 @@
       out.className = '';
       out.textContent = 'Checking…';
 
-      try {
-        const res = await fetch(`${API_URL}?name=${encodeURIComponent(name)}&key=${encodeURIComponent(key)}`);
-        const data = await res.json();
-
-        if (!data.ok) {
-          out.className = 'err';
-          out.textContent = `Error: ${data.error || 'Unknown error'}`;
-          return;
-        }
-
-        let relationClass = 'unknown';
-        if (data.relation === 'FRIENDLY') relationClass = 'friendly';
-        if (data.relation === 'ENEMY') relationClass = 'enemy';
-
-        out.className = relationClass;
-        out.innerHTML = `
-          <strong>Player:</strong> ${data.player ?? '(not found)'}<br>
-          <strong>Designation #:</strong> ${data.designation_number ?? '(unknown)'}<br>
-          <strong>Faction:</strong> ${data.faction ?? '(unknown)'}<br>
-          <strong>Status:</strong> ${data.relation}
-        `;
-      } catch (err) {
-        out.className = 'err';
-        out.textContent = 'Network error';
-      }
+      // Create JSONP request by injecting <script>
+      const script = document.createElement('script');
+      script.src = `${API_URL}?name=${encodeURIComponent(name)}&key=${encodeURIComponent(key)}&callback=handleResponse`;
+      document.body.appendChild(script);
     });
   </script>
 </body>
