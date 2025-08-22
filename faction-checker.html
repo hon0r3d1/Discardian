@@ -35,6 +35,7 @@
     #result {
       margin-top: 15px;
       font-weight: bold;
+      white-space: pre-line; /* preserve line breaks */
     }
   </style>
 </head>
@@ -62,7 +63,7 @@
 
       try {
         const response = await fetch(
-          "https://script.google.com/macros/s/XXXX/exec?name=" +
+          "https://script.google.com/macros/s/AKfycbyu5t0xjr2-2xKAuiPFwJfqt0HSocycxdEzESkYnE5MQK1s-T4EHM-jrtO2Ql-vScEs/exec?name=" +
           encodeURIComponent(name) + "&key=" + encodeURIComponent(key)
         );
 
@@ -71,7 +72,17 @@
         }
 
         const data = await response.json();
-        resultEl.textContent = data.message || JSON.stringify(data);
+
+        if (!data.ok) {
+          resultEl.textContent = "Error: " + data.error;
+        } else if (!data.found) {
+          resultEl.textContent = `Player "${data.query}" not found (assumed ENEMY).`;
+        } else {
+          resultEl.textContent =
+            `Player: ${data.player}\n` +
+            `Faction: ${data.faction ?? "Unknown"}\n` +
+            `Relation: ${data.relation}`;
+        }
       } catch (err) {
         resultEl.textContent = "Error: " + err.message;
       }
