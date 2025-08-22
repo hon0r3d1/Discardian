@@ -1,117 +1,81 @@
-<!doctype html>
+<!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="utf-8" />
+  <meta charset="UTF-8">
   <title>Faction Checker</title>
-  <meta name="viewport" content="width=device-width, initial-scale=1" />
   <style>
-    body { 
-      font-family: system-ui, sans-serif; 
-      background: #f8fafc; 
-      display: flex; 
-      justify-content: center; 
-      align-items: center; 
-      min-height: 100vh; 
+    body {
+      font-family: Arial, sans-serif;
+      padding: 20px;
+      background: #f4f4f4;
     }
-    .card {
-      background: white; 
-      padding: 2rem; 
-      border-radius: 1rem; 
-      box-shadow: 0 8px 24px rgba(0,0,0,0.1); 
-      max-width: 420px; 
+    .container {
+      max-width: 400px;
+      margin: auto;
+      padding: 20px;
+      background: white;
+      border-radius: 8px;
+      box-shadow: 0 0 8px rgba(0,0,0,0.1);
+    }
+    input, button {
       width: 100%;
+      margin: 8px 0;
+      padding: 10px;
+      font-size: 16px;
     }
-    h1 { margin-top: 0; font-size: 1.5rem; text-align: center; }
-    label { display: block; margin-top: 1rem; font-weight: 600; }
-    input { 
-      width: 100%; 
-      padding: .6rem .8rem; 
-      font-size: 1rem; 
-      margin-top: .25rem; 
-      border: 1px solid #ccc; 
-      border-radius: .5rem; 
-    }
-    button { 
-      margin-top: 1.5rem; 
-      width: 100%; 
-      padding: .75rem; 
-      font-size: 1rem; 
-      font-weight: 600; 
-      color: white; 
-      background: #2563eb; 
-      border: none; 
-      border-radius: .5rem; 
+    button {
+      background: #4CAF50;
+      color: white;
+      border: none;
       cursor: pointer;
     }
-    button:hover { background: #1d4ed8; }
-    #out {
-      margin-top: 1.5rem; 
-      padding: .75rem 1rem; 
-      border-radius: .5rem; 
-      font-size: 1rem;
+    button:hover {
+      background: #45a049;
     }
-    .friendly { background: #e6ffed; border: 1px solid #b7f5c3; }
-    .enemy { background: #ffecec; border: 1px solid #ffc2c2; }
-    .unknown { background: #f3f3f3; border: 1px solid #ddd; }
-    .err { background: #fff6f6; border: 1px solid #ffd1d1; }
+    #result {
+      margin-top: 15px;
+      font-weight: bold;
+    }
   </style>
 </head>
 <body>
-  <div class="card">
-    <h1>Faction Checker</h1>
-    <label for="name">Minecraft Username</label>
-    <input id="name" placeholder="Enter username" required />
-
-    <button id="checkBtn">Check Faction</button>
-
-    <div id="out"></div>
+  <div class="container">
+    <h2>Faction Checker</h2>
+    <input type="text" id="name" placeholder="Enter your name">
+    <input type="text" id="key" placeholder="Enter your key">
+    <button onclick="checkFaction()">Check</button>
+    <p id="result"></p>
   </div>
 
   <script>
-    // 👇 Your Apps Script Web App URL
-    const API_URL = 'https://script.google.com/macros/s/AKfycbyu5t0xjr2-2xKAuiPFwJfqt0HSocycxdEzESkYnE5MQK1s-T4EHM-jrtO2Ql-vScEs/exec';
-    // 👇 Baked-in API Key
-    const API_KEY = 'gojoslimitless';
+    async function checkFaction() {
+      const name = document.getElementById("name").value.trim();
+      const key = document.getElementById("key").value.trim();
+      const resultEl = document.getElementById("result");
 
-    // JSONP callback
-    function handleResponse(data) {
-      const out = document.getElementById('out');
-      if (!data.ok) {
-        out.className = 'err';
-        out.textContent = `Error: ${data.error || 'Unknown error'}`;
+      if (!name || !key) {
+        resultEl.textContent = "Please enter both name and key.";
         return;
       }
-      let relationClass = 'unknown';
-      if (data.relation === 'FRIENDLY') relationClass = 'friendly';
-      if (data.relation === 'ENEMY') relationClass = 'enemy';
 
-      out.className = relationClass;
-      out.innerHTML = `
-        <strong>Player:</strong> ${data.player ?? '(not found)'}<br>
-        <strong>Designation #:</strong> ${data.designation_number ?? '(unknown)'}<br>
-        <strong>Faction:</strong> ${data.faction ?? '(unknown)'}<br>
-        <strong>Status:</strong> ${data.relation}
-      `;
+      resultEl.textContent = "Checking...";
+
+      try {
+        const response = await fetch(
+          "https://script.google.com/macros/s/XXXX/exec?name=" +
+          encodeURIComponent(name) + "&key=" + encodeURIComponent(key)
+        );
+
+        if (!response.ok) {
+          throw new Error("Network response was not ok");
+        }
+
+        const data = await response.json();
+        resultEl.textContent = data.message || JSON.stringify(data);
+      } catch (err) {
+        resultEl.textContent = "Error: " + err.message;
+      }
     }
-
-    document.getElementById('checkBtn').addEventListener('click', () => {
-      const name = document.getElementById('name').value.trim();
-      const out = document.getElementById('out');
-
-      if (!name) {
-        out.className = 'err';
-        out.textContent = 'Please enter a username.';
-        return;
-      }
-
-      out.className = '';
-      out.textContent = 'Checking…';
-
-      // Inject <script> for JSONP
-      const script = document.createElement('script');
-      script.src = `${API_URL}?name=${encodeURIComponent(name)}&key=${encodeURIComponent(API_KEY)}&callback=handleResponse`;
-      document.body.appendChild(script);
-    });
   </script>
 </body>
 </html>
