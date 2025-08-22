@@ -1,0 +1,45 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Google Apps Script GUI</title>
+  <style>
+    body { font-family: Arial, sans-serif; margin: 40px; }
+    .container { max-width: 400px; margin: auto; }
+    input, button { width: 100%; padding: 10px; margin: 10px 0; }
+    #result { margin-top: 20px; padding: 10px; border: 1px solid #ccc; white-space: pre-wrap; }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h2>Send Data to Google Apps Script</h2>
+    <input id="input1" type="text" placeholder="Enter first value">
+    <input id="input2" type="text" placeholder="Enter second value">
+    <button onclick="callAPI()">Submit</button>
+    <div id="result">Waiting for response...</div>
+  </div>
+
+  <script>
+    function callAPI() {
+      const input1 = document.getElementById("input1").value;
+      const input2 = document.getElementById("input2").value;
+
+      // Replace with YOUR Apps Script URL (must end in /exec)
+      const baseUrl = "https://script.google.com/macros/s/PASTE_YOUR_SCRIPT_ID_HERE/exec";
+
+      // Add callback for JSONP
+      const url = `${baseUrl}?callback=handleResponse&input1=${encodeURIComponent(input1)}&input2=${encodeURIComponent(input2)}`;
+
+      // Create <script> for JSONP request
+      const script = document.createElement("script");
+      script.src = url;
+      document.body.appendChild(script);
+    }
+
+    // JSONP response handler
+    function handleResponse(data) {
+      document.getElementById("result").innerText = JSON.stringify(data, null, 2);
+    }
+  </script>
+</body>
+</html>
